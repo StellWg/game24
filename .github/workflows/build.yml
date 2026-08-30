@@ -19,7 +19,12 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo6 cmake libffi-dev libssl-dev automake
+          sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo6 cmake libffi-dev libssl-dev automake libtool-bin
+
+      - name: Patch libffi recipe
+        run: |
+          cd /home/runner/.buildozer/android/platform/python-for-android/pythonforandroid/recipes/libffi
+          sed -i 's/autogen.sh/autoreconf -fiv/' __init__.py 2>/dev/null || true
 
       - name: Add swap
         run: |
