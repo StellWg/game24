@@ -15,8 +15,13 @@ source.include_exts = py,otf,ttf,png,jpg,kv
 version = 1.0.0
 
 # 依赖
-# Python 固定 3.12.8：p4a 默认 3.14 与 kivy 2.3.0 + Cython 0.29 不兼容，且 python3/hostpython3 版本必须一致
-requirements = python3==3.12.8,hostpython3==3.12.8,kivy==2.3.0
+# p4a 固定 v2024.01.21（成熟稳定、支持 Python 3.11/kivy 2.3.0 的经典组合）。
+# 之前用 p4a master + Python 3.12 打包出的 APK 启动即闪退
+# （"failed to get the Python codec of the filesystem encoding"，master 新版 bootstrap 与 3.12 不兼容）。
+requirements = python3==3.11.9,hostpython3==3.11.9,kivy==2.3.0
+
+# p4a 版本固定（避免 master 上的不稳定改动）
+p4a.branch = v2024.01.21
 
 # 竖屏
 orientation = portrait
@@ -24,7 +29,7 @@ fullscreen = 0
 
 # Android 构建参数
 android.api = 31
-# Python 3.12 需要 API 26+（getgrent/setgrent/endgrent 从 API 26 才提供）
+# 最低支持 Android 8.0（API 26）
 android.minapi = 26
 android.archs = arm64-v8a, armeabi-v7a
 android.allow_backup = True
