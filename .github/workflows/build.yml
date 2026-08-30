@@ -21,11 +21,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo6 cmake libffi-dev libssl-dev automake libtool-bin
 
-      - name: Patch libffi recipe
-        run: |
-          cd /home/runner/.buildozer/android/platform/python-for-android/pythonforandroid/recipes/libffi
-          sed -i 's/autogen.sh/autoreconf -fiv/' __init__.py 2>/dev/null || true
-
       - name: Add swap
         run: |
           sudo swapoff -a 2>/dev/null || true
@@ -41,6 +36,14 @@ jobs:
       - name: Build APK (arm64 only)
         run: |
           sed -i 's/android.archs = arm64-v8a, armeabi-v7a/android.archs = arm64-v8a/' buildozer.spec
+          # First run to download python-for-android
+          buildozer -v android debug 2>&1 | tee build.log || true
+          # Patch libffi recipe if it exists
+          if [ -d "/home/runner/.buildozer/android/platform/python-for-android/pythonforandroid/recipes/libffi" ]; then
+            cd /home/runner/.buildozer/android/platform/python-for-android/pythonforandroid/recipes/libffi
+            sed -i 's/autogen.sh/autoreconf -fiv/' __init__.py
+          fi
+          # Second run to actually build
           buildozer -v android debug
 
       - name: Upload APK
