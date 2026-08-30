@@ -26,6 +26,8 @@ android.api = 31
 android.minapi = 21
 android.archs = arm64-v8a, armeabi-v7a
 android.allow_backup = True
+android.ndk = 27c
+android.ndk_api = 21
 
 # 保留通知等默认设置
 android.accept_sdk_license = True
