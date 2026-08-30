@@ -15,8 +15,8 @@ source.include_exts = py,otf,ttf,png,jpg,kv
 version = 1.0.0
 
 # 依赖
-# Python 固定 3.12.8：p4a 默认 3.14 与 kivy 2.3.0 + Cython 0.29 不兼容
-requirements = python3==3.12.8,kivy==2.3.0
+# Python 固定 3.12.8：p4a 默认 3.14 与 kivy 2.3.0 + Cython 0.29 不兼容，且 python3/hostpython3 版本必须一致
+requirements = python3==3.12.8,hostpython3==3.12.8,kivy==2.3.0
 
 # 竖屏
 orientation = portrait
