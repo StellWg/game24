@@ -21,8 +21,18 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev automake
 
+      - name: Add swap
+        run: |
+          sudo fallocate -l 4G /swapfile
+          sudo chmod 600 /swapfile
+          sudo mkswap /swapfile
+          sudo swapon /swapfile
+
       - name: Install buildozer
         run: pip install buildozer
+
+      - name: Verify font exists
+        run: ls -la assets/fonts/
 
       - name: Build APK
         run: buildozer android debug
