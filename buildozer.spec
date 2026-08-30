@@ -48,4 +48,7 @@ log_level = 2
 warn_on_root = 1
 
 # 构建缓存目录
-build_dir = ./build
+# 必须保持隐藏目录（点开头）：buildozer 复制源码时会自动跳过隐藏目录，
+# 否则 ./build 会被复制进 APK 私有数据，compileall 会因第三方源码中的
+# Python 2 脚本（如 SDL2_image 的 versiongenerate.py）报语法错误
+build_dir = ./.buildozer
