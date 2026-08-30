@@ -9,10 +9,17 @@
 """
 
 import os
-os.environ["KIVY_GRAPHICS"] = "angle_sdl2"
+
+# 注意：Android 上必须使用默认的 sdl2 图形后端（APK 中没有 ANGLE 库，
+# 且 kivy 2.3.0 也不存在 angle_sdl2 后端）。强制设置会导致应用启动即闪退，
+# 因此只在非 Android 平台（如桌面）启用 angle_sdl2。
+from kivy.utils import platform as _kivy_platform
+if _kivy_platform != "android":
+    os.environ["KIVY_GRAPHICS"] = "angle_sdl2"
 os.environ["KIVY_TEXT"] = "sdl2"
 
 import random
+import traceback
 from fractions import Fraction
 
 from kivy.app import App
@@ -276,4 +283,17 @@ class Game24App(App):
 
 
 if __name__ == "__main__":
-    Game24App().run()
+    try:
+        Game24App().run()
+    except BaseException:
+        # 闪退排查：把异常写进应用私有目录，adb 调试模式下可读取：
+        #   adb shell run-as org.example.game24 cat files/game24_crash.log
+        traceback.print_exc()
+        try:
+            from android.storage import app_storage_path
+            with open(os.path.join(app_storage_path(), "game24_crash.log"),
+                      "w", encoding="utf-8") as _f:
+                traceback.print_exc(file=_f)
+        except Exception:
+            pass
+        raise
