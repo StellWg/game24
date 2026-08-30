@@ -24,13 +24,13 @@ fullscreen = 0
 
 # Android 构建参数
 android.api = 31
-# Python 3.12 需要 API 24+（getgrent/pwritev 等从 API 24 才提供）
-android.minapi = 24
+# Python 3.12 需要 API 26+（getgrent/setgrent/endgrent 从 API 26 才提供）
+android.minapi = 26
 android.archs = arm64-v8a, armeabi-v7a
 android.allow_backup = True
 android.ndk = 25c
 android.ndk_path = /home/runner/.buildozer/android/platform/android-ndk-r25c
-android.ndk_api = 24
+android.ndk_api = 26
 
 # 保留通知等默认设置
 android.accept_sdk_license = True
