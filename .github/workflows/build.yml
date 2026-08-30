@@ -35,15 +35,26 @@ jobs:
 
       - name: Build APK (arm64 only)
         run: |
+          export ANDROIDNDK="/home/runner/.buildozer/android/platform/android-ndk-r25c"
+          export ANDROID_NDK_HOME="/home/runner/.buildozer/android/platform/android-ndk-r25c"
+          
           sed -i 's/android.archs = arm64-v8a, armeabi-v7a/android.archs = arm64-v8a/' buildozer.spec
-          # First run to download python-for-android
-          buildozer -v android debug 2>&1 | tee build.log || true
-          # Patch libffi recipe if it exists
-          if [ -d "/home/runner/.buildozer/android/platform/python-for-android/pythonforandroid/recipes/libffi" ]; then
-            cd /home/runner/.buildozer/android/platform/python-for-android/pythonforandroid/recipes/libffi
-            sed -i 's/autogen.sh/autoreconf -fiv/' __init__.py
+          
+          # First run: download python-for-android and recipes
+          buildozer -v android debug 2>&1 | head -30 || true
+          
+          # Patch libffi recipe: upgrade to v3.4.6 (fixes configure.ac for modern autoconf)
+          LIBFFI_RECIPE="/home/runner/.buildozer/android/platform/python-for-android/pythonforandroid/recipes/libffi/__init__.py"
+          if [ -f "$LIBFFI_RECIPE" ]; then
+            sed -i "s/version = '3.4.2'/version = '3.4.6'/" "$LIBFFI_RECIPE"
+            sed -i "s|url = 'https://github.com/libffi/libffi/archive/v3.4.2.tar.gz'|url = 'https://github.com/libffi/libffi/archive/refs/tags/v3.4.6.tar.gz'|" "$LIBFFI_RECIPE"
+            sed -i "/sha256/d" "$LIBFFI_RECIPE"
           fi
-          # Second run to actually build
+          
+          # Remove r27c if it was downloaded, force r25c
+          rm -rf /home/runner/.buildozer/android/platform/android-ndk-r27c
+          
+          # Second run: actual build with patched recipe and NDK 25c
           buildozer -v android debug
 
       - name: Upload APK

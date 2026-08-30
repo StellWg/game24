@@ -15,7 +15,7 @@ source.include_exts = py,otf,ttf,png,jpg,kv
 version = 1.0.0
 
 # 依赖
-requirements = python3,kivy
+requirements = python3,kivy==2.3.0
 
 # 竖屏
 orientation = portrait
@@ -26,7 +26,8 @@ android.api = 31
 android.minapi = 21
 android.archs = arm64-v8a, armeabi-v7a
 android.allow_backup = True
-android.ndk = 27c
+android.ndk = 25c
+android.ndk_path = /home/runner/.buildozer/android/platform/android-ndk-r25c
 android.ndk_api = 21
 
 # 保留通知等默认设置
