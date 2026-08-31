@@ -23,9 +23,12 @@ import traceback
 from fractions import Fraction
 
 from kivy.app import App
+from kivy.clock import Clock
 from kivy.core.text import LabelBase
 from kivy.core.window import Window
+from kivy.graphics import Color, RoundedRectangle
 from kivy.metrics import dp
+from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 from kivy.uix.floatlayout import FloatLayout
@@ -46,7 +49,7 @@ if os.path.exists(_FONT_PATH):
 
 # ---------------------------------------------------------------- 颜色常量
 WINDOW_BG = (0.11, 0.12, 0.16, 1)          # 深色背景
-CARD_BG = (0.97, 0.97, 0.98, 1)            # 数字卡片：白色
+CARD_BG = (0.60, 0.80, 0.95, 1)            # 数字卡片：浅蓝色
 TEXT_DARK = (0.10, 0.10, 0.12, 1)
 TEXT_LIGHT = (1, 1, 1, 1)
 GREEN = (0.30, 0.80, 0.40, 1)              # 成功（绿字）
@@ -77,13 +80,23 @@ class Card(Button):
             text=face, font_name=FONT, font_size=font_size, bold=True,
             color=text_color,
             background_normal="", background_down="",
-            background_color=bg, **kwargs)
+            background_color=(0, 0, 0, 0), **kwargs)
         self.face = face
         self.value = value
         self.expr = expr if expr is not None else face
         self.bg_normal = bg
         self.selected = False
         self.size_hint = (None, None)
+
+        with self.canvas.before:
+            self.rect_color = Color(*bg)
+            self.rect = RoundedRectangle(
+                pos=self.pos, size=self.size, radius=[dp(12)])
+        self.bind(pos=self._update_rect, size=self._update_rect)
+
+    def _update_rect(self, *args):
+        self.rect.pos = self.pos
+        self.rect.size = self.size
 
 
 # ================================================================ 工具函数
@@ -160,24 +173,31 @@ class SolverScreen(Screen):
                                       height=dp(38))
         root.add_widget(self.title_label)
 
-        # ---- 输入框 + 并列的 3 个按钮（计算 / 重置 / 退出）
-        input_row = BoxLayout(orientation="horizontal", spacing=dp(8),
-                              size_hint=(1, None), height=dp(50))
+        # ---- 输入框
         self.input_box = TextInput(multiline=False, font_name=FONT,
                                    font_size=dp(16), hint_text="输入4个数字，空格分隔，如：10 11 13 2 或 A J Q K",
                                    hint_text_color=GREY, foreground_color=TEXT_DARK,
                                    background_color=(0.95, 0.95, 0.97, 1),
-                                   size_hint=(1, 1), padding=[dp(10), dp(12), dp(10), dp(12)])
-        input_row.add_widget(self.input_box)
-        input_row.add_widget(make_button("计算", self.on_solve,
-                                         size_hint=(None, 1), width=dp(78),
-                                         bg=(0.24, 0.47, 0.85, 1)))
-        input_row.add_widget(make_button("重置", self.on_reset,
-                                         size_hint=(None, 1), width=dp(78)))
-        input_row.add_widget(make_button("退出", self.on_exit,
-                                         size_hint=(None, 1), width=dp(78),
-                                         bg=(0.70, 0.25, 0.25, 1)))
-        root.add_widget(input_row)
+                                   size_hint=(1, None), height=dp(50),
+                                   padding=[dp(10), dp(12), dp(10), dp(12)])
+        root.add_widget(self.input_box)
+
+        # ---- 3 个按钮并列放在输入框下方（居中对齐）
+        button_row = BoxLayout(orientation="horizontal", spacing=dp(8),
+                               size_hint=(None, None), width=dp(250), height=dp(50))
+        button_row.add_widget(make_button("计算", self.on_solve,
+                                          size_hint=(None, 1), width=dp(78),
+                                          bg=(0.24, 0.47, 0.85, 1)))
+        button_row.add_widget(make_button("重置", self.on_reset,
+                                          size_hint=(None, 1), width=dp(78)))
+        button_row.add_widget(make_button("退出", self.on_exit,
+                                          size_hint=(None, 1), width=dp(78),
+                                          bg=(0.70, 0.25, 0.25, 1)))
+
+        button_anchor = AnchorLayout(anchor_x="center", anchor_y="center",
+                                     size_hint=(1, None), height=dp(50))
+        button_anchor.add_widget(button_row)
+        root.add_widget(button_anchor)
 
         # ---- 中央：4 张数字卡片
         self.card_area = FloatLayout(size_hint=(1, 1))
@@ -265,6 +285,8 @@ class SolverScreen(Screen):
         self.card_area.clear_widgets()
         self.cards = []
         self.result_label.text = ""
+        # 重置后让输入框获得焦点
+        Clock.schedule_once(lambda dt: setattr(self.input_box, 'focus', True), 0.1)
 
     def on_exit(self, *args):
         App.get_running_app().stop()
@@ -279,6 +301,8 @@ class Game24App(App):
         self.screen_manager = ScreenManager()
         self.solver_screen = SolverScreen(name="solver")
         self.screen_manager.add_widget(self.solver_screen)
+        # 启动后让输入框获取焦点
+        Clock.schedule_once(lambda dt: setattr(self.solver_screen.input_box, 'focus', True), 0)
         return self.screen_manager
 
 
